@@ -19,7 +19,9 @@ Recuerda: el aprendizaje es un proceso, y está bien cometer errores. ¡Cada err
 Antes de comenzar, necesitarás crear tu propia copia del repositorio. Esto se hace mediante un "fork". Aquí te explicamos cómo:
 
 1. En la parte superior derecha de la página del repositorio en GitHub, encontrarás el botón "Fork". ¡Haz clic en él!
-   ![Botón Fork](https://docs.github.com/assets/cb-23088/images/help/repository/fork_button.png)
+
+   ![Ubicación del Fork](./images/fork-button.png "fork button")
+
 
 2. GitHub te preguntará dónde quieres crear el fork. Selecciona tu cuenta de usuario.
 
@@ -29,8 +31,8 @@ Antes de comenzar, necesitarás crear tu propia copia del repositorio. Esto se h
 
 5. Ahora, clona el repositorio a tu máquina local:
    ```bash
-   git clone https://github.com/TU-USUARIO/DiscotequeN.git
-   cd DiscotequeN
+   git clone https://github.com/TU-USUARIO/Discoteque.git
+   cd Discoteque
    ```
 
 ¡Listo! Ahora tienes tu propia copia del proyecto y estás listo para comenzar.
