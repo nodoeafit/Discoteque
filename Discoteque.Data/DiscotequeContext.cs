@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Discoteque.Data.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace Discoteque.Data;
 
 
@@ -19,13 +18,6 @@ public class DiscotequeContext : DbContext
     public DbSet<Tour> Tours { get; set; }
     public DbSet<User> Users { get; set; }
 
-    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    // {
-    //     if (!optionsBuilder.IsConfigured)
-    //     {
-    //         optionsBuilder.UseSqlServer("YourConnectionStringHere");
-    //     }
-    // }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         if (builder == null)
