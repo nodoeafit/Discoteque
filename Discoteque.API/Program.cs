@@ -4,6 +4,11 @@ using Discoteque.Data;
 using Discoteque.Business.IServices;
 using Discoteque.Business.Services;
 using Npgsql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using Discoteque.Business.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +17,59 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    //swagger configuration from documentation to add authentication to swagger
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Discoteque API", Version = "v1" });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by a space and the token."
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {} // No scopes required
+        }
+    });
+});
+
+// Add JWT Authentication
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options => {
+    options.RequireHttpsMetadata = false; //To enable in production set to true
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+    };
+}); 
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<DiscotequeContext>(
     opt => {
@@ -25,6 +82,8 @@ builder.Services.AddScoped<IArtistsService, ArtistsService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<ISongService, SongService>();
 builder.Services.AddScoped<ITourService, TourService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
@@ -58,32 +117,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
 
 
-/*
-docker run --env=POSTGRES_USER=discotequeUsr --env=POSTGRES_PASSWORD=localDk --env=POSTGRES_DB=discoteque -p 5432:5432 -d postgres
-docker run --env=POSTGRES_PASSWORD=localDk --env=POSTGRES_DB=discoteque -p 5432:5432 -d postgres
-
-dotnet ef database update --project Discoteque.Data --startup-project Discoteque.API
-
-docker run --name postgres-container -e POSTGRES_USER=discotequeUsr -e POSTGRES_PASSWORD=localDk -e POSTGRES_DB=discoteque -p 5432:5432 -d postgres
-
-docker ps
-docker stop <CONTAINER_ID>
-docker rm <CONTAINER_ID>
-docker volume rm pgdata
-docker volume create pgdata
-docker run --name db -e POSTGRES_USER=discotequeUsr -e POSTGRES_PASSWORD=localDk -e POSTGRES_DB=discoteque -p 5432:5432 -d postgres
-
-
-*/
 
 #region  DB Population
 /// <summary>
