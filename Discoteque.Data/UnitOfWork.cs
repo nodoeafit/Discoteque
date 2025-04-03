@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IRepository<int, Album> _albumRepository;
     private IRepository<int, Song> _songRepository;
     private IRepository<int, Tour> _tourRepository;
+    private IRepository<int, User> _usersRepository;
 
     public UnitOfWork(DiscotequeContext context)
     {
@@ -52,6 +53,18 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         {
             _tourRepository ??= new Repository<int, Tour>(_context);
             return _tourRepository;
+        }
+    }
+
+    public IRepository<int, User> UserRepository
+    {
+        get
+        {
+            if (_usersRepository == null)
+            {
+                _usersRepository = new Repository<int, User>(_context);
+            }
+            return _usersRepository;
         }
     }
 
